@@ -3,7 +3,6 @@
         "module": "NodeNext",
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": true,
         "outDir": "dist",
         "esModuleInterop": true,
         "resolveJsonModule": true,
