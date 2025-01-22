@@ -1,24 +1,20 @@
 {
-    "compilerOptions": {
-        "module": "NodeNext",
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "outDir": "dist",
-        "esModuleInterop": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "moduleDetection": "force",
-        "verbatimModuleSyntax": true,
-        "strict": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
-        "moduleResolution": "NodeNext"
-    },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "**/*.test.ts",
-        "**/*.spec.ts"
-    ]
+  "compilerOptions": {
+    "module": "NodeNext",
+    "removeComments": true,
+    "target": "ES2024",
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "moduleResolution": "NodeNext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts"]
 }
