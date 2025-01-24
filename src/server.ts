@@ -1,11 +1,24 @@
-import Fastify from "fastify";
+import express from "express";
 import dotenv from "dotenv";
+import db from "./modules/db.ts";
 dotenv.config();
 
 const port = process.env.PORT || 3000;
-const app = Fastify();
+const app = express();
 
-app.listen({ port: parseInt(process.env.PORT) || 3000, host: "0.0.0.0"}, err => {
-    if (err) throw err;
-    app.log.info(`Listening on ${app.server.address()}`);
-})
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});
+
+process.on("exit", () => {
+    db.end();
+    process.exit();
+});
+process.on("SIGINT", () => {
+    db.end();
+    process.exit();
+});
+process.on("SIGTERM", () => {
+    db.end();
+    process.exit();
+});

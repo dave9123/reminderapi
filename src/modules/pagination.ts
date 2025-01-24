@@ -1,0 +1,18 @@
+export default function pagination(page: number, limit: number, data: Array<any>) {
+    try {
+        const currentPage = page ? parseInt(page.toString()) : 1;
+        const currentLimit = limit ? parseInt(limit.toString()) : 10;
+        const startIndex = (currentPage - 1) * currentLimit;
+        const endIndex = currentPage * currentLimit;
+        const results = data.slice(startIndex, endIndex);
+        return {
+            results,
+            currentPage,
+            totalPages: Math.ceil(data.length / currentLimit),
+            totalEntries: data.length,
+            hasNextPage: endIndex < data.length,
+        };
+    } catch (error) {
+        console.error("An error occurred while paginating:", error);
+    }
+}

@@ -7,6 +7,7 @@
     "api",
     "reminderapi"
   ],
+  "type": "module",
   "homepage": "https://github.com/dave9123/reminderapi#readme",
   "bugs": {
     "url": "https://github.com/dave9123/reminderapi/issues"
@@ -20,18 +21,14 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "nodemon -w src -i dist -x 'tsx src/index.ts' -V",
+    "dev": "ts-node src/index.ts",
     "build": "tsc"
   },
   "dependencies": {
-    "@fastify/postgres": "^6.0.2",
-    "@mikro-orm/core": "^6.4.3",
-    "@mikro-orm/migrations": "^6.4.3",
-    "@mikro-orm/postgresql": "^6.4.3",
-    "@mikro-orm/reflection": "^6.4.3",
     "dotenv": "^16.4.7",
-    "fastify": "^5.2.1",
-    "fastify-plugin": "^5.0.1"
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
