@@ -1,13 +1,12 @@
 import db from "./db.ts";
+import doesUserExist from "./doesUserExist.ts";
 
-export default async function addReminder(userid: number, title: string, description: string, time: string) {
-    await db.connect();
-    await db.query("SELECT user_id FROM users WHERE user_id = $1", userid);
-    if (!userid) {
-        await db.release();
-        throw new Error("User not found");
+export default async function addReminder(userid: string, title: string, description: string, time: string) {
+    if (!doesUserExist(userid)) {
+        throw new Error("User does not exist");
     } else {
-        await db.query("INSERT INTO reminders (uid, title, description reminder, time) VALUES ($1, $2, $3)", userid, title, description, time);
+        await db.connect();
+        await db.query("INSERT INTO reminders (user_id, title, description, time) VALUES ($1, $2, $3, $4)", userid, title, description, time);
+        await db.release();
     }
-    await db.release();
 };
