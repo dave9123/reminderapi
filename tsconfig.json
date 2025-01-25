@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
+    //"module": "NodeNext",
     "removeComments": true,
-    "target": "ES2024",
+    "target": "ESNext",
     "preserveConstEnums": true,
     "outDir": "dist",
     "esModuleInterop": true,
@@ -11,10 +11,9 @@
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "allowImportingTsExtensions": true
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts"]

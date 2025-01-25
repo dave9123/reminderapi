@@ -1,4 +1,4 @@
-import db from "./db.ts";
+import db from "./db";
 
 export default async function doesUserExist(userid: string) {
     await db.connect();

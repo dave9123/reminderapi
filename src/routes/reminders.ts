@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
-import getReminders from "../modules/getReminders.ts";
-import addReminder from "../modules/addReminder.ts";
+import getReminders from "../modules/getReminders";
+import addReminder from "../modules/addReminder";
 
 router.get("/reminders", async (req, res) => {
     try {

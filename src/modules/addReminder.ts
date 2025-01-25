@@ -1,5 +1,5 @@
-import db from "./db.ts";
-import doesUserExist from "./doesUserExist.ts";
+import db from "./db";
+import doesUserExist from "./doesUserExist";
 
 export default async function addReminder(userid: string, title: string, description: string, time: string) {
     if (!doesUserExist(userid)) {
