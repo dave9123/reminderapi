@@ -5,6 +5,17 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import db from "./modules/db";
 dotenv.config();
 
+declare global {
+    interface ReminderData {
+        title: string;
+        description: string;
+        time: string;
+        repeat: string;
+        color: string;
+        tags: string[];
+    }
+}
+
 if (process.env.SENTRY_DSN) {
     Sentry.init({
         dsn: process.env.SENTRY_DSN,
@@ -13,7 +24,7 @@ if (process.env.SENTRY_DSN) {
         ],
         tracesSampleRate: 1.0,
     });
-    
+
     Sentry.profiler.startProfiler();
 }
 
