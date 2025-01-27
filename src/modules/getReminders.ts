@@ -1,13 +1,12 @@
 import db from "./db";
 import doesUserExist from "./doesUserExist";
+import pagination from "./pagination";
 
-export default async function getReminders(userid: string) {
+export default async function getReminders(userid: string, page: number, showPerPage: number) {
     if (!doesUserExist(userid)) {
         throw new Error("User does not exist");
     } else {
-        await db.connect();
-        const reminders = await db.query("SELECT * FROM reminders WHERE user_id = $1", userid);
-        await db.release();
-        return reminders.rows;
+        const reminders = (await db.query("SELECT * FROM reminders WHERE user_id = $1", userid)).rows;
+        return pagination(page, showPerPage, reminders);
     }
 }
