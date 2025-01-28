@@ -10,12 +10,13 @@ const pool = new Pool({
     port: parseInt(process.env.DB_PORT || "5432"),
 });
 
-await pool.query(`CREATE TABLE IF NOT EXISTS users (
+(async () => {
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL
     )`);
 
-await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
+    await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
         title TEXT NOT NULL,
@@ -25,5 +26,6 @@ await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         color TEXT NOT NULL,
         tags TEXT[]
     )`);
+})();
 
 export default pool;
