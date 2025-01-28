@@ -7,12 +7,17 @@ dotenv.config();
 
 declare global {
     interface ReminderData {
+        id: number;
+        reminderid: string;
+        userid: string;
         title: string;
         description: string;
         time: string;
         repeat: string;
         color: string;
+        priority: string;
         tags: string[];
+        sharedWith: string[];
     }
 }
 
@@ -29,6 +34,7 @@ if (process.env.SENTRY_DSN) {
 
 const port = parseInt(process.env.PORT || "3000");
 const app = express();
+app.disable("x-powered-by");
 
 app.use("/api", require("./routes/reminders.ts"));
 

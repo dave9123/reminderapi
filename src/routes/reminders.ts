@@ -7,7 +7,6 @@ import addReminder from "../modules/addReminder";
 import removeReminder from "../modules/removeReminder";
 import modifyReminder from "../modules/modifyReminder";
 import deleteUser from "../modules/deleteUser";
-import shareReminder from "../modules/shareReminder";
 
 router.get("/user/generate", async (req, res) => {
     try {
@@ -41,9 +40,8 @@ router.get("/reminders", async (req, res) => {
 
 router.post("/reminder/add", async (req, res) => {
     try {
-        const { userid, title, description, time } = req.body;
         res.json({
-            reminderId: await addReminder(userid, title, description, time),
+            reminderId: await addReminder(req.body),
             message: "Reminder added successfully"
         });
     } catch (error) {
@@ -90,17 +88,6 @@ router.post("/user/delete", async (req, res) => {
     } catch (error) {
         console.error("An error occurred while deleting a user:", error);
         res.status(500).json({ error: "An error occurred while deleting a user" });
-    }
-});
-
-router.post("/reminder/share", async (req, res) => {
-    try {
-        const { userid, reminderId, sharedWith } = req.body;
-        await shareReminder(userid, reminderId, sharedWith);
-        res.json({ message: "Reminder shared successfully" });
-    } catch (error) {
-        console.error("An error occurred while sharing a reminder:", error);
-        res.status(500).json({ error: "An error occurred while sharing a reminder" });
     }
 });
 

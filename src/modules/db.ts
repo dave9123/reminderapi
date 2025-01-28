@@ -14,9 +14,8 @@ const pool = new Pool({
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
@@ -25,14 +24,29 @@ const pool = new Pool({
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         time TEXT NOT NULL,
-        repeat TEXT NOT NULL,
-        color TEXT NOT NULL,
+        repeat BOOLEAN,
+        color TEXT,
+        priority TEXT,
         tags TEXT[],
         sharedWith TEXT[],
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
+    );`);
     
+    await pool.query(`CREATE FUNCTION IF NOT EXISTS update_modifiedReminder_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW."updatedOn" = now();
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+    `);
+
+    await pool.query(`CREATE TRIGGER IF NOT EXISTS update_reminders_modtime()
+        BEFORE UPDATE ON reminders
+        FOR EACH ROW
+        EXECUTE PROCEDURE update_modified_column();
+    `);
 })();
 
 export default pool;
