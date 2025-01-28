@@ -1,6 +1,8 @@
 import db from "./db";
 import doesUserExist from "./doesUserExist";
 
+const requiredBody = ["userid", "reminderId", "data"];
+
 export default async function modifyReminder(userid: string, reminderId: string, data: ReminderData) {
     if (!await doesUserExist(userid)) {
         throw new Error("User does not exist");
@@ -29,7 +31,7 @@ export default async function modifyReminder(userid: string, reminderId: string,
             fields.push(`color = $${index++}`);
             values.push(data.color);
         }
-        if (data.repeat !== undefined) {
+        if (data.repeat) {
             fields.push(`repeat = $${index++}`);
             values.push(data.repeat);
         }
@@ -47,8 +49,8 @@ export default async function modifyReminder(userid: string, reminderId: string,
         }
 
         if (fields.length > 0) {
-            const query = `UPDATE reminders SET ${fields.join(", ")} WHERE userid = $${index++} AND reminderid = $${index}`;
             values.push(userid, reminderId);
+            const query = `UPDATE reminders SET ${fields.join(", ")} WHERE userid = $${index++} AND reminderid = $${index}`;
             await db.query(query, values);
         }
     }

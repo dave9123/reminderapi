@@ -23,7 +23,7 @@ const pool = new Pool({
         userid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
-        time TEXT NOT NULL,
+        time TEXT,
         repeat BOOLEAN,
         color TEXT,
         priority TEXT,

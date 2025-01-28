@@ -1,6 +1,8 @@
 import doesUserExist from "./doesUserExist";
 import db from "./db";
 
+const requiredBody = ["userid"];
+
 export default async function deleteUser(userid: string) {
     if (!await doesUserExist(userid)) {
         throw new Error("User does not exist");

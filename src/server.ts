@@ -18,6 +18,8 @@ declare global {
         priority: string;
         tags: string[];
         sharedWith: string[];
+        createdOn: string;
+        updatedOn: string;
     }
 }
 
