@@ -13,19 +13,26 @@ const pool = new Pool({
 (async () => {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        userid TEXT NOT NULL
+        userid TEXT NOT NULL,
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
+        reminderid TEXT NOT NULL,
         userid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         time TEXT NOT NULL,
         repeat TEXT NOT NULL,
         color TEXT NOT NULL,
-        tags TEXT[]
+        tags TEXT[],
+        sharedWith TEXT[],
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
+    
 })();
 
 export default pool;
