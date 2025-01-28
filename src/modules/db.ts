@@ -17,7 +17,7 @@ await pool.query(`CREATE TABLE IF NOT EXISTS users (
 
 await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
-        user_id TEXT NOT NULL,
+        userid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         time TEXT NOT NULL,

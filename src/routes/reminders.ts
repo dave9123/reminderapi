@@ -1,14 +1,28 @@
 import express from "express";
 const router = express.Router();
-import getReminders from "../modules/getReminders";
-import addReminder from "../modules/addReminder"
-import removeReminder from "../modules/removeReminder";
-import modifyReminder from "../modules/modifyReminder";
-import generateUser from "../modules/generateUser";
+
+router.get("/user/generate", async (req, res) => {
+    try {
+        res.json({ userid: await require("../modules/generateUser.ts")() });
+    } catch (error) {
+        console.error("An error occurred while generating a user:", error);
+        res.status(500).json({ error: "An error occurred while generating a user" });
+    }
+});
+
+router.use(express.json());
+
+router.use(function (req, res, next) {
+    if (!req.body.userid) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+    }
+    next();
+});
 
 router.get("/reminders", async (req, res) => {
     try {
-        res.json(await getReminders(req.body.userid, req.body.page, req.body.showPerPage));
+        res.json(await require("../modules/getReminders")(req.body.userid, req.body.page, req.body.showPerPage));
     } catch (error) {
         console.error("An error occurred while getting reminders:", error);
         res.status(500).json({ error: "An error occurred while getting reminders" });
@@ -18,7 +32,7 @@ router.get("/reminders", async (req, res) => {
 router.post("/reminder/add", async (req, res) => {
     try {
         const { userid, title, description, time } = req.body;
-        await addReminder(userid, title, description, time);
+        await require("../modules/addReminder")(userid, title, description, time);
         res.json({ message: "Reminder added successfully" });
     } catch (error) {
         console.error("An error occurred while adding a reminder:", error);
@@ -29,7 +43,7 @@ router.post("/reminder/add", async (req, res) => {
 router.post("/reminder/remove", async (req, res) => {
     try {
         const { userid, reminderId } = req.body;
-        await removeReminder(userid, reminderId);
+        await require("../modules/removeReminder")(userid, reminderId);
         res.json({ message: "Reminder removed successfully" });
     } catch (error) {
         console.error("An error occurred while removing a reminder:", error);
@@ -40,7 +54,7 @@ router.post("/reminder/remove", async (req, res) => {
 router.post("/reminder/modify", async (req, res) => {
     try {
         const { userid, reminderId, data } = req.body;
-        await modifyReminder(userid, reminderId, data);
+        await require("../modules/modifyReminder")(userid, reminderId, data);
         res.json({ message: "Reminder modified successfully" });
     } catch (error) {
         console.error("An error occurred while modifying a reminder:", error);
@@ -48,12 +62,14 @@ router.post("/reminder/modify", async (req, res) => {
     }
 });
 
-router.get("/user/generate", async (req, res) => {
+router.post("/user/delete", async (req, res) => {
     try {
-        res.json({ userid: await generateUser() });
+        const { userid } = req.body;
+        await require("../modules/deleteUser")(userid);
+        res.json({ message: "User deleted successfully" });
     } catch (error) {
-        console.error("An error occurred while generating a user:", error);
-        res.status(500).json({ error: "An error occurred while generating a user" });
+        console.error("An error occurred while deleting a user:", error);
+        res.status(500).json({ error: "An error occurred while deleting a user" });
     }
 });
 
