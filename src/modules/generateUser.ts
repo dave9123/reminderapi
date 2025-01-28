@@ -3,6 +3,6 @@ import db from "./db";
 
 export default async function generateUser() {
     const userid = uuidv4();
-    await db.query("INSERT INTO users (userid) VALUES ($1)", uuidv4());
+    await db.query("INSERT INTO users (userid) VALUES ($1)", [ userid ]);
     return userid;
 }

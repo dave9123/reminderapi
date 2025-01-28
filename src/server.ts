@@ -27,7 +27,7 @@ if (process.env.SENTRY_DSN) {
     Sentry.profiler.startProfiler();
 }
 
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || "3000");
 const app = express();
 
 app.use("/api", require("./routes/reminders.ts"));
