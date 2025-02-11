@@ -14,7 +14,11 @@ const pool = new Pool({
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        username TEXT NOT NULL,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL,
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
@@ -32,20 +36,30 @@ const pool = new Pool({
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
+        id SERIAL PRIMARY KEY,
+        userid TEXT NOT NULL,
+        token TEXT NOT NULL,
+        valid BOOLEAN NOT NULL,
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`);
     
-    await pool.query(`CREATE FUNCTION IF NOT EXISTS update_modifiedReminder_column()
+    await pool.query(`CREATE OR REPLACE FUNCTION update_modifiedReminder_column()
         RETURNS TRIGGER AS $$
         BEGIN
             NEW."updatedOn" = now();
             RETURN NEW;
         END;
-        $$ language 'plpgsql';
+        $$ LANGUAGE 'plpgsql';
     `);
 
-    await pool.query(`CREATE TRIGGER IF NOT EXISTS update_reminders_modtime()
+    await pool.query(`DROP TRIGGER IF EXISTS update_reminders_modtime ON reminders;`);
+
+    await pool.query(`CREATE TRIGGER update_reminders_modtime
         BEFORE UPDATE ON reminders
         FOR EACH ROW
-        EXECUTE PROCEDURE update_modified_column();
+        EXECUTE FUNCTION update_modifiedReminder_column();
     `);
 })();
 

@@ -1,21 +1,10 @@
 import express from "express";
 const router = express.Router();
 import * as uuid from "uuid";
-import generateUser from "../modules/generateUser";
 import getReminders from "../modules/getReminders";
 import addReminder from "../modules/addReminder";
 import removeReminder from "../modules/removeReminder";
 import modifyReminder from "../modules/modifyReminder";
-import deleteUser from "../modules/deleteUser";
-
-router.get("/user/generate", async (req, res) => {
-    try {
-        res.json({ userid: generateUser() });
-    } catch (error) {
-        console.error("An error occurred while generating a user:", error);
-        res.status(500).json({ error: "An error occurred while generating a user" });
-    }
-});
 
 router.use(express.json());
 
@@ -31,7 +20,7 @@ router.use(function (req, res, next) {
 
 router.get("/reminders", async (req, res) => {
     try {
-        res.json(await getReminders(req.body.userid, req.body.page, req.body.showPerPage));
+        res.json(await getReminders(req.body));
     } catch (error) {
         console.error("An error occurred while getting reminders:", error);
         res.status(500).json({ error: "An error occurred while getting reminders" });
@@ -73,21 +62,6 @@ router.post("/reminder/modify", async (req, res) => {
     } catch (error) {
         console.error("An error occurred while modifying a reminder:", error);
         res.status(500).json({ error: "An error occurred while modifying a reminder" });
-    }
-});
-
-router.post("/user/delete", async (req, res) => {
-    try {
-        const { userid } = req.body;
-        if (req.query.confirm !== "yes") {
-            res.status(400).json({ error: "Please confirm the deletion by providing ?confirm=yes" });
-        } else {
-            await deleteUser(userid);
-            res.json({ message: "User deleted successfully" });
-        }
-    } catch (error) {
-        console.error("An error occurred while deleting a user:", error);
-        res.status(500).json({ error: "An error occurred while deleting a user" });
     }
 });
 

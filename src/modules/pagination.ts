@@ -1,4 +1,4 @@
-export default function pagination(page: number, limit: number, data: Array<any>) {
+export default function pagination(page: string = "1", limit: string = "10", data: Array<any>) {
     const currentPage = page ? parseInt(page.toString()) : 1;
     const currentLimit = limit ? parseInt(limit.toString()) : 10;
     const startIndex = (currentPage - 1) * currentLimit;

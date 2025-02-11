@@ -24,10 +24,12 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@sentry/node": "^8.51.0",
-    "@sentry/profiling-node": "^8.51.0",
-    "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
+    "@sentry/node": "^8.53.0",
+    "@sentry/profiling-node": "^8.53.0",
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
+    "chrono-node": "^2.7.8",
+    "dateparser": "^1.0.6",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.1",
