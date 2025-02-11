@@ -10,6 +10,7 @@
         "strict": true,
         "noUncheckedIndexedAccess": true,
         "noImplicitOverride": true,
+        "noImplicitAny": false,
         "module": "preserve",
         "noEmit": true,
         "lib": ["es2022"]
