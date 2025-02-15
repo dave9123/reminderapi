@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import db from "../modules/db";
+import db from "../../modules/db";
 import bcrypt from "bcrypt";
 import express from "express";
 const router = express.Router();
@@ -13,7 +13,7 @@ interface createUser {
 
 const requiredBody = ["username", "email", "password"];
 
-router.post("/createUser", async (req, res) => {
+router.post("/create", async (req, res) => {
     try {
         const body: createUser = await req.body;
         if (requiredBody.some((key) => !body[key])) {
