@@ -39,7 +39,7 @@ const app = express();
 app.disable("x-powered-by");
 
 import userRouter from "./routes/user";
-import reminderRouter from "./routes/reminders";
+import reminderRouter from "./routes/reminders/reminders";
 app.use("/api", userRouter);
 app.use("/api", reminderRouter);
 

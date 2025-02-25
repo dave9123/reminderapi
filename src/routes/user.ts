@@ -1,10 +1,11 @@
 import express from "express";
 const router = express.Router();
 
-import createUser from "./user/create";
-import deleteUser from "../modules/deleteUser";
+router.post("/create", async (req, res) => {
 
-router.use("/create", createUser);
-router.use("/delete", deleteUser);
+});
+router.use("/delete", async (req, res) => {
+    
+});
 
 export default router;
