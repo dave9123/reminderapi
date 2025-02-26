@@ -5,24 +5,6 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import db from "./modules/db";
 dotenv.config();
 
-declare global {
-    interface ReminderData {
-        id: number;
-        reminderid: string;
-        userid: string;
-        title: string;
-        description: string;
-        time: string;
-        repeat: string;
-        color: string;
-        priority: string;
-        tags: string[];
-        sharedWith: string[];
-        createdOn: string;
-        updatedOn: string;
-    }
-}
-
 if (process.env.SENTRY_DSN) {
     Sentry.init({
         dsn: process.env.SENTRY_DSN,
@@ -39,9 +21,9 @@ const app = express();
 app.disable("x-powered-by");
 
 import userRouter from "./routes/user";
-import reminderRouter from "./routes/reminders/reminders";
-app.use("/api", userRouter);
-app.use("/api", reminderRouter);
+import reminderRouter from "./routes/reminders";
+app.use("/api/user", userRouter);
+app.use("/api/reminder", reminderRouter);
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);
