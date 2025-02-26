@@ -1,4 +1,5 @@
 import express from "express";
+import * as chrono from "chrono-node";
 import db from "../modules/db";
 import checkAuthorization from "../modules/checkAuthorization";
 import checkRequiredField from "../modules/checkRequiredField";
@@ -36,13 +37,21 @@ router.get("/", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     const requiredFields = ["title"];
-    const optionalFields = ["description", "time", "color", "priority", "tags", "sharedWith"];
+    const optionalFields = ["description", "color", "time", "priority", "tags", "sharedWith"];
     try {
         const auth = await checkAuthorization(req, res);
         const body = checkRequiredField(requiredFields, req, res);
-        const optionalFieldsQuery = optionalFields.filter(field => field in body).map(field => `${field}`);
-        const optionalFieldsValues = optionalFields.filter(field => field in body).map(field => body[field]);
-        const optionalFieldsPlaceholders = optionalFields.filter((_, index) => `$${index + 3}`);
+        const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
+        const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
+        if ("time" in body) {
+            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true });
+            if (!parsedTime) {
+                res.status(400).json({ message: "Invalid time format" });
+            }
+            optionalFieldsQuery.push("time");
+            optionalFieldsValues.push(parsedTime);
+        }
+        const optionalFieldsPlaceholders = optionalFields.filter(field => field in body).map((_, index) => `$${index + 3}`);
         await db.query(`INSERT INTO reminders (userid, title, ${optionalFieldsQuery.join(", ")}) VALUES ($1, $2, ${optionalFieldsPlaceholders.join(", ")})`, [auth.userid, body["title"], ...optionalFieldsValues]);
         res.json({ message: "Reminder added successfully" });        
     } catch (error) {
