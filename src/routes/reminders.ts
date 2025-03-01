@@ -37,7 +37,7 @@ router.get("/", async (req, res) => {
 
 router.post("/add", async (req, res) => {
     const requiredFields = ["title"];
-    const optionalFields = ["description", "color", "time", "priority", "tags", "sharedWith"];
+    const optionalFields = ["description", "color", "priority", "tags", "sharedWith", "time"];
     try {
         const auth = await checkAuthorization(req, res);
         const body = checkRequiredField(requiredFields, req, res);
@@ -61,7 +61,7 @@ router.post("/add", async (req, res) => {
 });
 
 router.post("/update/:id", async (req, res) => {
-    const optionalFields = ["title", "description", "time", "color", "priority", "tags", "sharedWith"];
+    const optionalFields = ["description", "color", "priority", "tags", "sharedWith", "time"];
     try {
         const auth = await checkAuthorization(req, res);
         const reminder = (await db.query("SELECT * FROM reminders WHERE id = $1", [req.params.id])).rows[0];
@@ -70,8 +70,16 @@ router.post("/update/:id", async (req, res) => {
             return;
         }
         const body = await req.body;
-        const optionalFieldsQuery = optionalFields.filter(field => field in body).map((field, index) => `${field} = $${index + 2}`);
-        const optionalFieldsValues = optionalFields.filter(field => field in body).map(field => body[field]);
+        const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
+        const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
+        if ("time" in body) {
+            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true });
+            if (!parsedTime) {
+                res.status(400).json({ message: "Invalid time format" });
+            }
+            optionalFieldsQuery.push("time");
+            optionalFieldsValues.push(parsedTime);
+        }
         await db.query(`UPDATE reminders SET ${optionalFieldsQuery.join(", ")} WHERE id = $1`, [req.params.id, ...optionalFieldsValues]);
         res.json({ message: "Reminder updated successfully" });
     } catch (error) {

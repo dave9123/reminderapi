@@ -9,13 +9,12 @@ router.post("/signup", async (req, res) => {
     const requiredFields = ["username", "email", "password"];
     try {
         const body = await checkRequiredField(requiredFields, req, res);
-        const { username, email, password } = req.body;
-        const user = (await db.query("SELECT * FROM users WHERE email = $1 OR username = $2", [email])).rows[0];
+        const user = (await db.query("SELECT * FROM users WHERE email = $1 OR username = $2", [body.email, body.username])).rows[0];
         if (user) {
             res.status(409).json({ message: "User already exists" });
             return;
         }
-        await db.query("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", [username, email, password]);
+        await db.query("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", [body.username, body.email, body.password]);
         res.json({ message: "User created successfully" });
     } catch (error) {
         console.error("An error occured while creating a user", error);
@@ -26,6 +25,7 @@ router.post("/signup", async (req, res) => {
 router.use("/delete", async (req, res) => {
     const requiredFields = ["session"];
     try {
+        await checkRequiredField(requiredFields, req, res);
         const auth = await checkAuthorization(req, res);
         db.query("DELETE FROM users WHERE id = $1", [auth.userid]);
         db.query("UPDATE sessions SET isValid = FALSE WHERE token = $1", [auth.session]);
