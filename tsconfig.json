@@ -14,5 +14,7 @@
         "module": "preserve",
         "noEmit": true,
         "lib": ["es2022"]
-    }
+    },
+    "include": ["src/**/*"],
+    "exclude": []
 }

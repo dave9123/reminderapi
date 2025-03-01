@@ -20,10 +20,9 @@ const port = parseInt(process.env.PORT || "3000");
 const app = express();
 app.disable("x-powered-by");
 
-import userRouter from "./routes/user";
-import reminderRouter from "./routes/reminders";
-app.use("/api/user", userRouter);
-app.use("/api/reminder", reminderRouter);
+app.use("/api/user", require("./routes/user"));
+app.use("/api/reminder", require("./routes/reminders"));
+app.use("/api/subscription", require("./routes/subscription"));
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);

@@ -5,6 +5,11 @@ import checkAuthorization from "../modules/checkAuthorization";
 import checkRequiredField from "../modules/checkRequiredField";
 const router = express.Router();
 
+function isValidHexColor(color: string): boolean {
+    const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i;
+    return hexColorRegex.test(color);
+}
+
 router.get("/", async (req, res) => {
     try {
         const auth = await checkAuthorization(req, res);
@@ -40,9 +45,12 @@ router.post("/add", async (req, res) => {
     const optionalFields = ["description", "color", "priority", "tags", "sharedWith", "time"];
     try {
         const auth = await checkAuthorization(req, res);
-        const body = checkRequiredField(requiredFields, req, res);
+        const body = await checkRequiredField(requiredFields, req, res);
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
+        if ("color" in body && !isValidHexColor(body["color"])) {
+            res.status(400).json({ message: "Invalid color format, ensure it's in hex code." });
+        }
         if ("time" in body) {
             const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true });
             if (!parsedTime) {

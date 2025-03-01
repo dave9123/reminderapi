@@ -43,7 +43,7 @@ const pool = new Pool({
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
     
-    pool.query(`CREATE TABLE IF NOT EXISTS subscribers (
+    pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
         target TEXT NOT NULL,
