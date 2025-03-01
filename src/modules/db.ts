@@ -51,6 +51,12 @@ const pool = new Pool({
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
+    pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
+        id SERIAL PRIMARY KEY,
+        subscriptionid TEXT NOT NULL,
+        firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`);
+
     pool.query(`CREATE OR REPLACE FUNCTION update_modifiedReminder_column()
         RETURNS TRIGGER AS $$
         BEGIN

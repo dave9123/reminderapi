@@ -48,6 +48,21 @@ router.post("/add", async (req, res) => {
         const body = await checkRequiredField(requiredFields, req, res);
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
+        if ("sharedWith" in body && !Array.isArray(body["sharedWith"])) {
+            res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
+        }
+        if ("title" in body && body["title"].length > 256) {
+            res.status(400).json({ message: "Title is too long, ensure it's less than 256 characters" });
+        }
+        if ("description" in body && body["description"].length > 4096) {
+            res.status(400).json({ message: "Description is too long, ensure it's less than 4096 characters" });
+        }
+        if ("priority" in body && !["low", "medium", "high"].includes(body["priority"])) {
+            res.status(400).json({ message: "Invalid priority, ensure it's one of low, medium, high" });
+        }
+        if ("tags" in body && !Array.isArray(body["tags"])) {
+            res.status(400).json({ message: "Invalid tags format, ensure it's an array of strings" });
+        }
         if ("color" in body && !isValidHexColor(body["color"])) {
             res.status(400).json({ message: "Invalid color format, ensure it's in hex code." });
         }
