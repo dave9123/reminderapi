@@ -4,7 +4,7 @@ import checkRequiredField from "../modules/checkRequiredField";
 import db from "../modules/db";
 const router = express.Router();
 
-const supportedSubscriptions = ["discord-webhook"]
+const supportedSubscriptions = ["discord-webhook", "slack-webhook"];
 
 router.post("/add", async (req, res) => {
     const requiredFields = ["type", "target", "sharedWith"];

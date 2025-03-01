@@ -20,9 +20,15 @@ const port = parseInt(process.env.PORT || "3000");
 const app = express();
 app.disable("x-powered-by");
 
-app.use("/api/user", require("./routes/user"));
-app.use("/api/reminder", require("./routes/reminders"));
-app.use("/api/subscription", require("./routes/subscription"));
+import user from "./routes/user";
+import reminder from "./routes/reminders";
+import subscription from "./routes/subscription";
+app.use("/api/user", user);
+app.use("/api/reminder", reminder);
+app.use("/api/subscription", subscription);
+
+import subscriptionHandler from "./modules/subscriptionHandler";
+subscriptionHandler();
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);

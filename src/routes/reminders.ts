@@ -67,7 +67,7 @@ router.post("/add", async (req, res) => {
             res.status(400).json({ message: "Invalid color format, ensure it's in hex code." });
         }
         if ("time" in body) {
-            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true });
+            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true })?.toISOString();
             if (!parsedTime) {
                 res.status(400).json({ message: "Invalid time format" });
             }
@@ -96,7 +96,7 @@ router.post("/update/:id", async (req, res) => {
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
         if ("time" in body) {
-            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true });
+            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true })?.toISOString;
             if (!parsedTime) {
                 res.status(400).json({ message: "Invalid time format" });
             }

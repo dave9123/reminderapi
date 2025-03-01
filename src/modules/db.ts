@@ -54,6 +54,7 @@ const pool = new Pool({
     pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
         id SERIAL PRIMARY KEY,
         subscriptionid TEXT NOT NULL,
+        successful BOOLEAN NOT NULL DEFAULT FALSE,
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
