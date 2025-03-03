@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import helmet from "helmet";
 import db from "./modules/db";
 dotenv.config();
 
@@ -18,13 +19,22 @@ if (process.env.SENTRY_DSN) {
 
 const port = parseInt(process.env.PORT || "3000");
 const app = express();
-app.disable("x-powered-by");
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    xPermittedCrossDomainPolicies: false,
+    xFrameOptions: false,
+    xDownloadOptions: false,
+    strictTransportSecurity: process.env.NODE_ENV === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
+    referrerPolicy: false,
+}));
 
 import user from "./routes/user";
-import reminder from "./routes/reminders";
+import reminders from "./routes/reminders";
 import subscription from "./routes/subscription";
 app.use("/api/user", user);
-app.use("/api/reminder", reminder);
+app.use("/api/reminders", reminders);
 app.use("/api/subscription", subscription);
 
 import subscriptionHandler from "./modules/subscriptionHandler";

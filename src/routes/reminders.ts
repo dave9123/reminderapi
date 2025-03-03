@@ -16,18 +16,34 @@ router.get("/", async (req, res) => {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = (page - 1) * limit;
+        const allowOthers = req.query.allowOthers == "true";
 
-        const reminders = (await db.query(
-            "SELECT * FROM reminders WHERE userid = $1 OR $1 = ANY(sharedWith) LIMIT $2 OFFSET $3",
-            [auth.userid, limit, offset]
-        )).rows;
+        let reminders;
+        let totalReminders
 
-        const totalReminders = (await db.query(
-            "SELECT COUNT(*) FROM reminders WHERE userid = $1 OR $1 = ANY(sharedWith)",
-            [auth.userid]
-        )).rows[0].count;
+        if (allowOthers) {
+            reminders = (await db.query(
+                "SELECT * FROM reminders WHERE userid = $1 OR $1 = ANY(sharedWith) LIMIT $2 OFFSET $3",
+                [auth.userid, limit, offset]
+            )).rows;
 
-        res.json({
+            totalReminders = (await db.query(
+                "SELECT COUNT(*) FROM reminders WHERE userid = $1 OR $1 = ANY(sharedWith)",
+                [auth.userid]
+            )).rows[0].count;
+        } else {
+            reminders = (await db.query(
+                "SELECT * FROM reminders WHERE userid = $1 LIMIT $2 OFFSET $3",
+                [auth.userid, limit, offset]
+            )).rows;
+
+            totalReminders = (await db.query(
+                "SELECT COUNT(*) FROM reminders WHERE userid = $1",
+                [auth.userid]
+            )).rows[0].count;
+        }
+        
+        res.status(200).json({
             reminders,
             page,
             limit,
@@ -76,7 +92,7 @@ router.post("/add", async (req, res) => {
         }
         const optionalFieldsPlaceholders = optionalFields.filter(field => field in body).map((_, index) => `$${index + 3}`);
         await db.query(`INSERT INTO reminders (userid, title, ${optionalFieldsQuery.join(", ")}) VALUES ($1, $2, ${optionalFieldsPlaceholders.join(", ")})`, [auth.userid, body["title"], ...optionalFieldsValues]);
-        res.json({ message: "Reminder added successfully" });        
+        res.json({ message: "Reminder added successfully" });
     } catch (error) {
         console.error("An error occured while adding a reminder", error);
         res.status(500).json({ message: "Internal Server Error" });

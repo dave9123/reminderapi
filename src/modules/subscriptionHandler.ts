@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node"
 import db from "./db";
 
 function HEXToVBColor(rrggbb: string) {
@@ -6,7 +7,7 @@ function HEXToVBColor(rrggbb: string) {
 }
 
 async function sendDiscordWebhook(target: string, message: any) {
-    const embed:any = {
+    const embed: any = {
         "username": "Reminder Bot",
         "embeds": [
             {
@@ -21,7 +22,7 @@ async function sendDiscordWebhook(target: string, message: any) {
             "parse": []
         }
     };
-    if (message.description) message.description = message.description
+    if (message.description) embed.description = message.description
     if (message.color) message.color = HEXToVBColor(message.color.replace("#", ""))
     if (message.priority) {
         embed.fields = embed.fields || []
@@ -44,17 +45,21 @@ async function sendDiscordWebhook(target: string, message: any) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(embed)
-    }).then((res) => {
-        if (res.status === 200) {
+    }).then(async (res) => {
+        if (await res.status === 200) {
             return true;
         } else {
             return false;
         }
+    }).catch((error) => {
+        Sentry.captureException(error);
+        console.error("An error occurred while sending a Discord webhook", error);
+        return false;
     });
 }
 
 async function sendSlackWebhook(target: string, message: any) {
-    const embed:any = {
+    const embed: any = {
         "username": "Reminder Bot",
         "blocks": [
             {
@@ -109,22 +114,32 @@ async function sendSlackWebhook(target: string, message: any) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(embed)
-    }).then((res) => {
-        if (res.status === 200) {
+    }).then(async (res) => {
+        if (await res.status === 200) {
             return true;
         } else {
             return false;
         }
+    }).catch((error) => {
+        Sentry.captureException(error);
+        console.error("An error occurred while sending a Slack webhook", error);
+        return false;
     });
 }
 
 async function sendSubscription(target: string, message: any) {
-    if (target === "discord-webhook") {
-        return await sendDiscordWebhook(target, message);93
-    } else if (target === "slack-webhook") {
-        return await sendSlackWebhook(target, message);
-    } else {
-        throw new Error("Unsupported subscription type");
+    try {
+        if (target === "discord-webhook") {
+            return await sendDiscordWebhook(target, message);
+        } else if (target === "slack-webhook") {
+            return await sendSlackWebhook(target, message);
+        } else {
+            throw new Error("Unsupported subscription type");
+        }
+    } catch (error) {
+        Sentry.captureException(error);
+        console.error("An error occurred while sending a subscription", error);
+        return false;
     }
 }
 
@@ -153,6 +168,7 @@ async function handleSubscriptions() {
             }
         }
     } catch (error) {
+        Sentry.captureException(error);
         console.error("An error occurred while processing subscriptions", error);
     }
 };

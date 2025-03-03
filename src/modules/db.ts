@@ -8,6 +8,7 @@ const pool = new Pool({
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT || "5432"),
+    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false
 });
 
 (async () => {
@@ -42,7 +43,7 @@ const pool = new Pool({
         lastUsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
-    
+
     pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
@@ -67,9 +68,7 @@ const pool = new Pool({
         $$ LANGUAGE 'plpgsql';
     `);
 
-    pool.query(`DROP TRIGGER IF EXISTS update_reminders_modtime ON reminders;`);
-
-    pool.query(`CREATE TRIGGER update_reminders_modtime
+    pool.query(`CREATE TRIGGER IF NOT EXISTS update_reminders_modtime
         BEFORE UPDATE ON reminders
         FOR EACH ROW
         EXECUTE FUNCTION update_modifiedReminder_column();
