@@ -54,7 +54,7 @@ const pool = new Pool({
 
     pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
         id SERIAL PRIMARY KEY,
-        subscriptionid TEXT NOT NULL,
+        subscriptionid INTEGER NOT NULL,
         successful BOOLEAN NOT NULL DEFAULT FALSE,
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
@@ -68,7 +68,7 @@ const pool = new Pool({
         $$ LANGUAGE 'plpgsql';
     `);
 
-    pool.query(`CREATE TRIGGER IF NOT EXISTS update_reminders_modtime
+    pool.query(`CREATE OR REPLACE TRIGGER update_reminders_modtime
         BEFORE UPDATE ON reminders
         FOR EACH ROW
         EXECUTE FUNCTION update_modifiedReminder_column();
