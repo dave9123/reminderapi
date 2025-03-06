@@ -29,6 +29,7 @@ app.use(helmet({
     strictTransportSecurity: process.env.NODE_ENV === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
     referrerPolicy: false,
 }));
+app.use(express.json());
 
 import user from "./routes/user";
 import reminders from "./routes/reminders";
@@ -38,7 +39,7 @@ app.use("/api/reminders", reminders);
 app.use("/api/subscription", subscription);
 
 import subscriptionHandler from "./modules/subscriptionHandler";
-subscriptionHandler();
+//subscriptionHandler();
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);

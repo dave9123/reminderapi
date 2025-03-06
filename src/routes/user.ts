@@ -14,9 +14,11 @@ router.post("/signup", async (req, res) => {
         const body = await checkRequiredField(requiredFields, req, res);
         if (!emailRegex.test(body.email)) {
             res.status(400).json({ message: "Invalid email" });
+            return;
         }
         if (!usernameRegex.test(body.username)) {
             res.status(400).json({ message: "Invalid username" });
+            return;
         }
         const user = (await db.query("SELECT * FROM users WHERE email = $1 OR username = $2", [body.email, body.username])).rows[0];
         if (user) {

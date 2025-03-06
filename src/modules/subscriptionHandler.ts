@@ -1,7 +1,7 @@
-import * as Sentry from "@sentry/node"
+import * as Sentry from "@sentry/node";
 import db from "./db";
 
-function HEXToVBColor(rrggbb: string) {
+function HEXToVBColor(rrggbb: string): number {
     var bbggrr = rrggbb.substr(4, 2) + rrggbb.substr(2, 2) + rrggbb.substr(0, 2);
     return parseInt(bbggrr, 16);
 }
@@ -22,24 +22,32 @@ async function sendDiscordWebhook(target: string, message: any) {
             "parse": []
         }
     };
-    if (message.description) embed.description = message.description
-    if (message.color) message.color = HEXToVBColor(message.color.replace("#", ""))
-    if (message.priority) {
-        embed.fields = embed.fields || []
-        embed.fields.push({
-            "name": "Priority",
-            "value": message.priority
-        })
-    }
-    if (message.tags) {
-        embed.fields = embed.fields || []
-        embed.fields.push({
-            "name": "Tags",
-            "value": message.tags.join(", ")
-        })
+
+    if (message.description) {
+        embed.embeds[0].description = message.description;
     }
 
-    await fetch(target, {
+    if (message.color) {
+        embed.embeds[0].color = HEXToVBColor(message.color.replace("#", ""));
+    }
+
+    if (message.priority) {
+        embed.embeds[0].fields = embed.embeds[0].fields || [];
+        embed.embeds[0].fields.push({
+            "name": "Priority",
+            "value": message.priority
+        });
+    }
+
+    if (message.tags && Array.isArray(message.tags)) {
+        embed.embeds[0].fields = embed.embeds[0].fields || [];
+        embed.embeds[0].fields.push({
+            "name": "Tags",
+            "value": message.tags.join(", ")
+        });
+    }
+
+    return await fetch(target, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -74,7 +82,6 @@ async function sendSlackWebhook(target: string, message: any) {
     };
 
     if (message.description) {
-        embed.blocks = embed.blocks || [];
         embed.blocks.push({
             "type": "section",
             "text": {
@@ -83,32 +90,28 @@ async function sendSlackWebhook(target: string, message: any) {
             }
         });
     }
-    if (message.priority) {
-        embed.blocks = embed.blocks || [];
+
+    if (message.tags || message.priority) {
+        const fields: any[] = [];
+        if (message.tags && Array.isArray(message.tags)) {
+            fields.push({
+                "type": "mrkdwn",
+                "text": `*Tags:*\n${message.tags.join(", ")}`
+            });
+        }
+        if (message.priority) {
+            fields.push({
+                "type": "mrkdwn",
+                "text": `*Priority:*\n${message.priority}`
+            });
+        }
         embed.blocks.push({
             "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": `*Priority:*\n${message.priority}`
-                }
-            ]
-        });
-    }
-    if (message.tags && Array.isArray(message.tags)) {
-        embed.blocks = embed.blocks || [];
-        embed.blocks.push({
-            "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": `*Tags:*\n${message.tags.join(", ")}`
-                }
-            ]
+            "fields": fields
         });
     }
 
-    await fetch(target, {
+    return await fetch(target, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -146,10 +149,10 @@ async function sendSubscription(target: string, message: any) {
 async function handleSubscriptions() {
     try {
         const subscriptions = await db.query(`
-            SELECT s.id AS subscription_id, s.target, r.*
+            SELECT s.id AS subscription_id, s.target, r.id AS reminder_id, r.*
             FROM subscriptions s
             JOIN reminders r ON s.userid = r.userid
-            LEFT JOIN firedSubscriptions fs ON s.id = fs.subscriptionid
+            LEFT JOIN firedSubscriptions fs ON s.id = fs.subscriptionid AND r.id = fs.reminderid
             WHERE fs.subscriptionid IS NULL AND r.time IS NOT NULL AND r.time <= NOW()
         `);
 
@@ -164,14 +167,14 @@ async function handleSubscriptions() {
         for (const target in remindersByTarget) {
             for (const reminder of remindersByTarget[target]) {
                 const successful = await sendSubscription(target, reminder);
-                await db.query("INSERT INTO firedSubscriptions (subscriptionid, successful) VALUES ($1, $2)", [reminder.subscription_id, successful]);
+                await db.query("INSERT INTO firedSubscriptions (subscriptionid, reminderid, successful) VALUES ($1, $2, $3)", [reminder.subscription_id, reminder.reminder_id, successful]);
             }
         }
     } catch (error) {
         Sentry.captureException(error);
         console.error("An error occurred while processing subscriptions", error);
     }
-};
+}
 
 export default function schedule() {
     setInterval(handleSubscriptions, 1 * 60 * 1000);

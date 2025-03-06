@@ -8,7 +8,7 @@ const pool = new Pool({
     database: process.env.DB_DATABASE,
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT || "5432"),
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false
+    ssl: process.env.DB_SSL == "true" ? { rejectUnauthorized: false } : false
 });
 
 (async () => {
@@ -55,6 +55,7 @@ const pool = new Pool({
     pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
         id SERIAL PRIMARY KEY,
         subscriptionid INTEGER NOT NULL,
+        reminderid INTEGER NOT NULL,
         successful BOOLEAN NOT NULL DEFAULT FALSE,
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
