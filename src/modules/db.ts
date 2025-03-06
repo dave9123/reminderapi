@@ -26,7 +26,7 @@ const pool = new Pool({
         userid TEXT NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
-        time TEXT,
+        time TIMESTAMP,
         color TEXT,
         priority TEXT,
         tags TEXT[],

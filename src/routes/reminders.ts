@@ -61,7 +61,9 @@ router.post("/add", async (req, res) => {
     const optionalFields = ["description", "color", "priority", "tags", "sharedWith", "time"];
     try {
         const auth = await checkAuthorization(req, res);
+        if (!auth) return;
         const body = await checkRequiredField(requiredFields, req, res);
+        if (!body) return;
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
         if ("sharedWith" in body && !Array.isArray(body["sharedWith"])) {

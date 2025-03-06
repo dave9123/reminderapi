@@ -39,7 +39,7 @@ app.use("/api/reminders", reminders);
 app.use("/api/subscription", subscription);
 
 import subscriptionHandler from "./modules/subscriptionHandler";
-//subscriptionHandler();
+subscriptionHandler();
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);

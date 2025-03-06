@@ -10,6 +10,7 @@ async function checkAuthorization(req: Request, res: Response): Promise<any> {
     const sessions = (await db.query("SELECT * FROM sessions WHERE token = $1 AND isValid = TRUE", [token])).rows;
     if (sessions.length === 0) {
         res.status(401).json({ message: "Unauthorized" });
+        return;
     } else if (sessions.length > 1) {
         throw new Error("Multiple sessions found for the same token");
     }

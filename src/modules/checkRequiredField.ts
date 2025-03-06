@@ -10,6 +10,7 @@ async function checkRequiredField(requiredFields: string[], req: Request, res: R
         return body;
     } else {
         res.status(400).json({ message: "Missing request body" });
+        return;
     }
 }
 
