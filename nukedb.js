@@ -11,8 +11,8 @@ const pool = new Pool({
 });
 
 tables = ["users", "reminders", "sessions", "subscriptions", "firedSubscriptions"]
-triggers = ["update_reminders_modtime"]
-functions = ["update_modifiedReminder_column()"]
+triggers = ["update_reminders_modtime", "update_users_modtime"]
+functions = ["update_modifiedReminder_column()", "update_modifiedUser_column()"]
 
 for (let table of tables) {
     pool.query(`DROP TABLE IF EXISTS ${table};`)

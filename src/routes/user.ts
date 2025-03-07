@@ -1,9 +1,12 @@
 import express from "express";
-import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import db from "../modules/db";
 import checkAuthorization from "../modules/checkAuthorization";
 import checkRequiredField from "../modules/checkRequiredField";
+import { randomUUID } from "crypto";
+dotenv.config();
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
@@ -78,7 +81,7 @@ router.post("/login", async (req, res) => {
             if (!same) {
                 res.status(401).json({ message: "Invalid email or password" });
             }
-            const session = uuidv4();
+            const session = jwt.sign({ userid: users[0].id, session: randomUUID() }, process.env.JWT_SECRET || "");
             await db.query("INSERT INTO sessions (userid, token) VALUES ($1, $2)", [users[0].id, session]);
             res.status(200).json({ userid: users[0].id, session });
         });
@@ -102,8 +105,18 @@ router.get("/logout", async (req, res) => {
 router.get("/sessions", async (req, res) => {
     try {
         const auth = await checkAuthorization(req, res);
-        const sessions = (await db.query("SELECT * FROM sessions WHERE userid = $1 AND isValid = TRUE", [auth.userid])).rows;
-        res.status(200).json(sessions);
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const offset = (page - 1) * limit;
+        const sessions = (await db.query("SELECT * FROM sessions WHERE userid = $1 AND isValid = TRUE LIMIT $2 OFFSET $3", [auth.userid, limit, offset])).rows;
+        const totalSessions = (await db.query("SELECT COUNT(*) FROM sessions WHERE userid = $1 AND isValid = TRUE", [auth.userid])).rows[0].count;
+        res.status(200).json({
+            sessions,
+            page,
+            limit,
+            totalSessions,
+            totalPages: Math.ceil(totalSessions / limit)
+        });
     } catch (error) {
         console.error("An error occured while fetching sessions", error);
         res.status(500).json({ message: "Internal Server Error" });

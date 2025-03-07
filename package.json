@@ -21,12 +21,14 @@
     "scripts": {
         "start": "node dist/server.js",
         "dev": "NODE_ENV=development ts-node src/server.ts",
-        "build": "tsc -p tsconfig.json"
+        "build": "tsc -p tsconfig.json",
+        "nodemon:dev": "NODE_ENV=development nodemon -w src -e ts,js --exec 'ts-node src/server.ts'"
     },
     "dependencies": {
         "@sentry/node": "^8.53.0",
         "@sentry/profiling-node": "^8.53.0",
         "@types/bcrypt": "^5.0.2",
+        "@types/jsonwebtoken": "^9.0.9",
         "@types/node": "^22.13.1",
         "bcrypt": "^5.1.1",
         "chrono-node": "^2.7.8",

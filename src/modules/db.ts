@@ -12,7 +12,9 @@ const pool = new Pool({
 });
 
 (async () => {
-    pool.query(`CREATE TABLE IF NOT EXISTS users (
+    console.time("Database schema loading time");
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT NOT NULL,
         email TEXT NOT NULL,
@@ -21,7 +23,7 @@ const pool = new Pool({
         updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    pool.query(`CREATE TABLE IF NOT EXISTS reminders (
+    await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
         title TEXT NOT NULL,
@@ -35,7 +37,7 @@ const pool = new Pool({
         updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    pool.query(`CREATE TABLE IF NOT EXISTS sessions (
+    await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
         token TEXT NOT NULL,
@@ -44,7 +46,7 @@ const pool = new Pool({
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
+    await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
         id SERIAL PRIMARY KEY,
         userid TEXT NOT NULL,
         target TEXT NOT NULL,
@@ -52,7 +54,7 @@ const pool = new Pool({
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
+    await pool.query(`CREATE TABLE IF NOT EXISTS firedSubscriptions (
         id SERIAL PRIMARY KEY,
         subscriptionid INTEGER NOT NULL,
         reminderid INTEGER NOT NULL,
@@ -60,7 +62,7 @@ const pool = new Pool({
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    pool.query(`CREATE OR REPLACE FUNCTION update_modifiedReminder_column()
+    await pool.query(`CREATE OR REPLACE FUNCTION update_modifiedReminder_column()
         RETURNS TRIGGER AS $$
         BEGIN
             NEW."updatedOn" = now();
@@ -69,11 +71,28 @@ const pool = new Pool({
         $$ LANGUAGE 'plpgsql';
     `);
 
-    pool.query(`CREATE OR REPLACE TRIGGER update_reminders_modtime
+    await pool.query(`CREATE OR REPLACE TRIGGER update_reminders_modtime
         BEFORE UPDATE ON reminders
         FOR EACH ROW
         EXECUTE FUNCTION update_modifiedReminder_column();
     `);
+
+    await pool.query(`CREATE OR REPLACE FUNCTION update_modifiedUser_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW."updatedOn" = now();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE 'plpgsql';
+    `);
+
+    await pool.query(`CREATE OR REPLACE TRIGGER update_users_modtime
+        BEFORE UPDATE ON users
+        FOR EACH ROW
+        EXECUTE FUNCTION update_modifiedUser_column();
+    `);
+
+    console.timeEnd("Database schema loading time");
 })();
 
 export default pool;
