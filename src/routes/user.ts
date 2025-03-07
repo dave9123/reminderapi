@@ -99,4 +99,37 @@ router.get("/logout", async (req, res) => {
     }
 });
 
+router.get("/sessions", async (req, res) => {
+    try {
+        const auth = await checkAuthorization(req, res);
+        const sessions = (await db.query("SELECT * FROM sessions WHERE userid = $1 AND isValid = TRUE", [auth.userid])).rows;
+        res.status(200).json(sessions);
+    } catch (error) {
+        console.error("An error occured while fetching sessions", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+router.post("/sessions/delete", async (req, res) => {
+    const requiredFields = ["session", "password"];
+    try {
+        const body = await checkRequiredField(requiredFields, req, res);
+        const auth = await checkAuthorization(req, res);
+        const hashedPassword = (await db.query("SELECT password FROM users WHERE id = $1", [auth.userid])).rows[0].password;
+        await bcrypt.compare(body.password, hashedPassword, async (err, same) => {
+            if (err) {
+                throw new Error("An error occured while comparing the passwords");
+            }
+            if (!same) {
+                res.status(401).json({ message: "Invalid password" });
+            }
+            await db.query("UPDATE sessions SET isValid = FALSE WHERE token = $1", [body.session]);
+            res.status(200).json({ message: "Session deleted successfully" });
+        });
+    } catch (error) {
+        console.error("An error occured while deleting a session", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 export default router;
