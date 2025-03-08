@@ -16,9 +16,11 @@ const pool = new Pool({
 
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
+        userid TEXT NOT NULL,
         username TEXT NOT NULL,
         email TEXT NOT NULL,
         password TEXT NOT NULL,
+        lastUsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
@@ -43,7 +45,8 @@ const pool = new Pool({
         token TEXT NOT NULL,
         isValid BOOLEAN NOT NULL DEFAULT TRUE,
         lastUsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
@@ -62,7 +65,9 @@ const pool = new Pool({
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
-    await pool.query(`CREATE OR REPLACE FUNCTION update_modifiedReminder_column()
+    const tables = ["users", "reminders", "sessions"];
+
+    await pool.query(`CREATE OR REPLACE FUNCTION update_modified_column()
         RETURNS TRIGGER AS $$
         BEGIN
             NEW."updatedOn" = now();
@@ -71,26 +76,13 @@ const pool = new Pool({
         $$ LANGUAGE 'plpgsql';
     `);
 
-    await pool.query(`CREATE OR REPLACE TRIGGER update_reminders_modtime
-        BEFORE UPDATE ON reminders
-        FOR EACH ROW
-        EXECUTE FUNCTION update_modifiedReminder_column();
-    `);
-
-    await pool.query(`CREATE OR REPLACE FUNCTION update_modifiedUser_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW."updatedOn" = now();
-            RETURN NEW;
-        END;
-        $$ LANGUAGE 'plpgsql';
-    `);
-
-    await pool.query(`CREATE OR REPLACE TRIGGER update_users_modtime
-        BEFORE UPDATE ON users
-        FOR EACH ROW
-        EXECUTE FUNCTION update_modifiedUser_column();
-    `);
+    for (const table of tables) {
+        await pool.query(`CREATE OR REPLACE TRIGGER update_${table}_modtime
+            BEFORE UPDATE ON ${table}
+            FOR EACH ROW
+            EXECUTE FUNCTION update_modified_column();
+        `);
+    }
 
     console.timeEnd("Database schema loading time");
 })();

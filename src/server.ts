@@ -29,7 +29,7 @@ app.use(helmet({
     strictTransportSecurity: process.env.NODE_ENV === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
     referrerPolicy: false,
 }));
-app.use(express.json());
+app.use(express.text({type: "*/*"}));
 
 import user from "./routes/user";
 import reminders from "./routes/reminders";

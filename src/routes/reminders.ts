@@ -13,6 +13,7 @@ function isValidHexColor(color: string): boolean {
 router.get("/", async (req, res) => {
     try {
         const auth = await checkAuthorization(req, res);
+        if (!auth) return;
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = (page - 1) * limit;
@@ -42,7 +43,7 @@ router.get("/", async (req, res) => {
                 [auth.userid]
             )).rows[0].count;
         }
-        
+
         res.status(200).json({
             reminders,
             page,
@@ -66,25 +67,26 @@ router.post("/add", async (req, res) => {
         if (!body) return;
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
-        if ("sharedWith" in body && !Array.isArray(body["sharedWith"])) {
-            res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
-        }
-        if ("title" in body && body["title"].length > 256) {
+        if ("sharedWith" in body) {
+            if (!Array.isArray(body["sharedWith"])) {
+                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
+            } else {
+                const users = (await db.query("SELECT id FROM users WHERE id = ANY($1)", [body["sharedWith"]])).rows;
+                if (users.length !== body["sharedWith"].length) {
+                    res.status(400).json({ message: "Invalid user IDs in sharedWith" });
+                }
+            }
+        } else if ("title" in body && body["title"].length > 256) {
             res.status(400).json({ message: "Title is too long, ensure it's less than 256 characters" });
-        }
-        if ("description" in body && body["description"].length > 4096) {
+        } else if ("description" in body && body["description"].length > 4096) {
             res.status(400).json({ message: "Description is too long, ensure it's less than 4096 characters" });
-        }
-        if ("priority" in body && !["low", "medium", "high"].includes(body["priority"])) {
+        } else if ("priority" in body && !["low", "medium", "high"].includes(body["priority"])) {
             res.status(400).json({ message: "Invalid priority, ensure it's one of low, medium, high" });
-        }
-        if ("tags" in body && !Array.isArray(body["tags"])) {
+        } else if ("tags" in body && !Array.isArray(body["tags"])) {
             res.status(400).json({ message: "Invalid tags format, ensure it's an array of strings" });
-        }
-        if ("color" in body && !isValidHexColor(body["color"])) {
+        } else if ("color" in body && !isValidHexColor(body["color"])) {
             res.status(400).json({ message: "Invalid color format, ensure it's in hex code." });
-        }
-        if ("time" in body) {
+        } else if ("time" in body) {
             const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true })?.toISOString();
             if (!parsedTime) {
                 res.status(400).json({ message: "Invalid time format" });
@@ -101,26 +103,53 @@ router.post("/add", async (req, res) => {
     }
 });
 
-router.post("/update/:id", async (req, res) => {
-    const optionalFields = ["description", "color", "priority", "tags", "sharedWith", "time"];
+router.post("/modify/:id", async (req, res) => {
+    const optionalFields = ["title", "description", "color", "priority", "tags", "sharedWith", "time"];
     try {
         const auth = await checkAuthorization(req, res);
+        if (!auth) return;
         const reminder = (await db.query("SELECT * FROM reminders WHERE id = $1", [req.params.id])).rows[0];
         if (reminder.userid !== auth.userid) {
             res.status(403).json({ message: "You are not authorized to update this reminder" });
             return;
         }
-        const body = await req.body;
+        const body = await checkRequiredField([], req, res);
+        if (!body) return;
         const optionalFieldsQuery = optionalFields.filter(field => field in body && field !== "time").map(field => `${field}`);
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
-        if ("time" in body) {
-            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true })?.toISOString;
+        if ("sharedWith" in body) {
+            if (!Array.isArray(body["sharedWith"])) {
+                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
+            } else {
+                const users = (await db.query("SELECT id FROM users WHERE id = ANY($1)", [body["sharedWith"]])).rows;
+                if (users.length !== body["sharedWith"].length) {
+                    res.status(400).json({ message: "Invalid user IDs in sharedWith" });
+                }
+            }
+        } else if ("title" in body) {
+            if (body["title"].length > 256) {
+                res.status(400).json({ message: "Title is too long, ensure it's less than 256 characters" });
+            } else if (body["title"].length === 0) {
+                res.status(400).json({ message: "Title cannot be empty" });
+            }
+        } else if ("description" in body && body["description"].length > 4096) {
+            res.status(400).json({ message: "Description is too long, ensure it's less than 4096 characters" });
+        } else if ("priority" in body && !["low", "medium", "high"].includes(body["priority"])) {
+            res.status(400).json({ message: "Invalid priority, ensure it's one of low, medium, high" });
+        } else if ("tags" in body && !Array.isArray(body["tags"])) {
+            res.status(400).json({ message: "Invalid tags format, ensure it's an array of strings" });
+        } else if ("color" in body && !isValidHexColor(body["color"])) {
+            res.status(400).json({ message: "Invalid color format, ensure it's in hex code." });
+        } else if ("time" in body) {
+            const parsedTime = chrono.parseDate(body["time"] as string, new Date(), { forwardDate: true })?.toISOString();
             if (!parsedTime) {
                 res.status(400).json({ message: "Invalid time format" });
             }
             optionalFieldsQuery.push("time");
             optionalFieldsValues.push(parsedTime);
         }
+        const optionalFieldsPlaceholders = optionalFields.filter(field => field in body).map((_, index) => `$${index + 3}`);
+        await db.query(`INSERT INTO reminders (userid, title, ${optionalFieldsQuery.join(", ")}) VALUES ($1, $2, ${optionalFieldsPlaceholders.join(", ")})`, [auth.userid, body["title"], ...optionalFieldsValues]);
         await db.query(`UPDATE reminders SET ${optionalFieldsQuery.join(", ")} WHERE id = $1`, [req.params.id, ...optionalFieldsValues]);
         res.json({ message: "Reminder updated successfully" });
     } catch (error) {
@@ -131,14 +160,28 @@ router.post("/update/:id", async (req, res) => {
 
 router.delete("/delete/:id", async (req, res) => {
     try {
-        const userid = await checkAuthorization(req, res);
-        const reminder = (await db.query("SELECT * FROM reminders WHERE id = $1", [req.params.id])).rows[0];
-        if (reminder.userid !== userid) {
-            res.status(403).json({ message: "You are not authorized to delete this reminder" });
+        if (!req.params.id) {
+            res.status(400).json({ message: "Please provide reminder ID" });
             return;
         }
-        await db.query("DELETE FROM reminders WHERE id = $1", [req.params.id]);
-        res.json({ message: "Reminder deleted successfully" });
+        const auth = await checkAuthorization(req, res);
+        if (!auth) return;
+        const reminder = (await db.query("SELECT userid, shared FROM reminders WHERE id = $1", [req.params.id])).rows[0];
+        if (reminder.userid !== auth.userid && !reminder.shared.includes(auth.userid)) {
+            res.status(403).json({ message: "You are not authorized to delete this reminder" });
+            return;
+        } else if (reminder.shared.includes(auth.userid)) {
+            await db.query("UPDATE reminders SET sharedWith = array_remove(sharedWith, $1) WHERE id = $2", [auth.userid, req.params.id]);
+            res.json({ message: "Reminder unshared successfully" });
+            return;
+        } else if (reminder.userid === auth.userid) {
+            await db.query("DELETE FROM reminders WHERE id = $1", [req.params.id]);
+            res.json({ message: "Reminder deleted successfully" });
+            return;
+        } else {
+            res.status(500).json({ message: "An error occured while deleting the reminder" });
+            return;
+        }
     } catch (error) {
         console.error("An error occured while deleting a reminder", error);
         res.status(500).json({ message: "Internal Server Error" });
