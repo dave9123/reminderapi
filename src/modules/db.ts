@@ -21,8 +21,7 @@ const pool = new Pool({
         email TEXT NOT NULL,
         password TEXT NOT NULL,
         lastUsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS reminders (
@@ -35,8 +34,7 @@ const pool = new Pool({
         priority TEXT,
         tags TEXT[],
         sharedWith TEXT[],
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
@@ -45,8 +43,7 @@ const pool = new Pool({
         token TEXT NOT NULL,
         isValid BOOLEAN NOT NULL DEFAULT TRUE,
         lastUsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
@@ -54,6 +51,7 @@ const pool = new Pool({
         userid TEXT NOT NULL,
         target TEXT NOT NULL,
         type TEXT NOT NULL,
+        getSharedWith BOOLEAN NOT NULL DEFAULT FALSE,
         createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
 
@@ -64,25 +62,6 @@ const pool = new Pool({
         successful BOOLEAN NOT NULL DEFAULT FALSE,
         firedOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`);
-
-    const tables = ["users", "reminders", "sessions"];
-
-    await pool.query(`CREATE OR REPLACE FUNCTION update_modified_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW."updatedOn" = now();
-            RETURN NEW;
-        END;
-        $$ LANGUAGE 'plpgsql';
-    `);
-
-    for (const table of tables) {
-        await pool.query(`CREATE OR REPLACE TRIGGER update_${table}_modtime
-            BEFORE UPDATE ON ${table}
-            FOR EACH ROW
-            EXECUTE FUNCTION update_modified_column();
-        `);
-    }
 
     console.timeEnd("Database schema loading time");
 })();

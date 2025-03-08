@@ -39,7 +39,7 @@ router.post("/add", async (req, res) => {
         if ((await db.query("SELECT * FROM subscriptions WHERE userid = $1 AND target = $2 AND type = $3", [auth.userid, body.target, body.type])).rows.length > 0) {
             res.status(400).json({ message: "Already subscribed" });
         }
-        await db.query("INSERT INTO subscriptions (userid, target, type, sharedWith) VALUES ($1, $2, $3, $4)", [auth.userid, body.target, body.type, body.sharedWith]);
+        await db.query("INSERT INTO subscriptions (userid, target, type, getSharedWith) VALUES ($1, $2, $3, $4)", [auth.userid, body.target, body.type, body.getSharedWith]);
         res.json({ message: "Subscribed successfully" });
     } catch (error) {
         console.error("An error occured while subscribing", error);

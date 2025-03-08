@@ -40,7 +40,9 @@ router.post("/signup", async (req, res) => {
         while ((await db.query("SELECT * FROM users WHERE userid = $1", [userid])).rows.length > 0);
         await bcrypt.hash(body.password, 10, async (err, hash) => {
             if (err) {
-                throw new Error("An error occured while hashing the password");
+                res.status(500).json({ message: "Internal Server Error" });
+                console.error("An error occured while comparing the passwords:", err);
+                return;
             }
             await db.query("INSERT INTO users (username, email, password, userid) VALUES ($1, $2, $3, $4)", [body.username, body.email, hash, userid]);
         });
@@ -61,7 +63,9 @@ router.delete("/delete", async (req, res) => {
         const hashedPassword = (await db.query("SELECT password FROM users WHERE id = $1", [auth.userid])).rows[0].password;
         await bcrypt.compare(body.password, hashedPassword, async (err, same) => {
             if (err) {
-                throw new Error("An error occured while comparing the passwords");
+                res.status(500).json({ message: "Internal Server Error" });
+                console.error("An error occured while comparing the passwords:", err);
+                return;
             }
             if (!same) {
                 res.status(401).json({ message: "Invalid password" });
@@ -84,21 +88,23 @@ router.post("/login", async (req, res) => {
     try {
         const body = await checkRequiredField(requiredFields, req, res);
         if (!body) return;
-        const users = (await db.query("SELECT userid FROM users WHERE email = $1 OR username = $1", [body.user])).rows;
+        const users = (await db.query("SELECT userid,password FROM users WHERE email = $1 OR username = $1", [body.user])).rows;
         if (users.length === 0) {
             res.status(401).json({ message: "Invalid email/username or password" });
             return;
         }
-        await bcrypt.compare(body.password, users[0].password, async (err, same) => {
+        bcrypt.compare(body.password, users[0].password, async (err, same) => {
             if (err) {
-                throw new Error("An error occured while comparing the passwords");
+                res.status(500).json({ message: "Internal Server Error" });
+                console.error("An error occured while comparing the passwords:", err);
+                return;
             }
             if (!same) {
                 res.status(401).json({ message: "Invalid email or password" });
             }
             var session: string | undefined
             do {
-                session = jwt.sign({ userid: users[0].userid, session: randomUUID() }, process.env.JWT_SECRET || "");
+                session = await jwt.sign({ userid: users[0].userid, session: randomUUID() }, process.env.JWT_SECRET || "");
             }
             while ((await db.query("SELECT * from sessions WHERE token = $1", [session])).rows.length > 0);
             await db.query("INSERT INTO sessions (userid, token) VALUES ($1, $2)", [users[0].userid, session]);
