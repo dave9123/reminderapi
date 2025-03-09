@@ -6,4 +6,3 @@ exclude:
   - *.json
 permalink: pretty
 baseurl: "https://reminderapi.dave9123.hackclub.app"
-url: "https://reminderapi.dave9123.hackclub.app"
