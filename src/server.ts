@@ -44,12 +44,18 @@ subscriptionHandler();
 app.use(express.static("public"));
 
 import fs from "fs";
+const baseUrl = process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app";
+const replaceUrls = (data: string) => {
+    return data.replace(/https?:\/\/dave9123\.is-a\.dev\/reminderapi\//g, baseUrl)
+               .replace(/\/reminderapi/g, baseUrl);
+};
 fs.readFile("public/index.html", "utf8", (err, data) => {
     if (err) {
         console.error(err);
         return;
     }
-    fs.writeFile("public/index.html", data.replace("https://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("http://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("/reminderapi", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app"), (err) => {
+    const updatedData = replaceUrls(data);
+    fs.writeFile("public/index.html", updatedData, (err) => {
         if (err) {
             console.error(err);
             return;

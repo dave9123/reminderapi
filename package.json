@@ -19,7 +19,7 @@
     "author": "dave9123",
     "main": "dist/server.js",
     "scripts": {
-        "start": "node dist/server.js",
+        "start": "git stash && node dist/server.js",
         "dev": "NODE_ENV=development ts-node src/server.ts",
         "build": "tsc -p tsconfig.json",
         "nodemon:dev": "NODE_ENV=development nodemon -w src -e ts,js --exec 'ts-node src/server.ts'"
