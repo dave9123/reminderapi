@@ -36,8 +36,8 @@ jobs:
                   destination: ./_site
             - name: Copy web files
               run:
-                mkdir -p public
-                cp _site/index.html public/index.html
+                mkdir -p public &&
+                cp _site/index.html public/index.html &&
                 cp _site/assets/css/style.css public/assets/css/style.css
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
