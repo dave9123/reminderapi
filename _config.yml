@@ -1,3 +1,7 @@
 include:
-  - README.md
+  - pub/index.md
+exclude:
+  - *.ts
+  - *.js
+  - *.json
 permalink: pretty
