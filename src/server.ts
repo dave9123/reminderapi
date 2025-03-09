@@ -29,7 +29,7 @@ app.use(helmet({
     strictTransportSecurity: process.env.NODE_ENV === "production" ? { maxAge: 31536000, includeSubDomains: true } : false,
     referrerPolicy: false,
 }));
-app.use(express.text({type: "*/*"}));
+app.use(express.text({ type: "*/*" }));
 
 import user from "./routes/user";
 import reminders from "./routes/reminders";
@@ -42,6 +42,15 @@ import subscriptionHandler from "./modules/subscriptionHandler";
 subscriptionHandler();
 
 app.use(express.static("public"));
+
+import fs from "fs";
+fs.readFile("public/index.html", "utf8", (err, data) => {
+    if (err) {
+        console.error(err);
+        return;
+    }
+    data = data.replace("http://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("/reminderapi", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app");
+});
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);

@@ -147,7 +147,6 @@ async function sendSubscription(subscription: any) {
 
 async function handleSubscriptions() {
     try {
-        console.log("Processing subscriptions...");
         const subscriptions = await db.query(`
             SELECT s.id AS subscription_id, s.target, s.type, r.id AS reminder_id, r.*
             FROM subscriptions s
