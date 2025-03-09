@@ -10,6 +10,10 @@ An API to store your reminders easily!
 
 ### Reminders
 
+Note:
+- * means that it's required
+- Set Authorization header to `Bearer (your token)`
+
 #### [GET] /api/reminders
 
 Get a list of reminder(s)
