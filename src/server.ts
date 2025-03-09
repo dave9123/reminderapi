@@ -49,8 +49,7 @@ fs.readFile("public/index.html", "utf8", (err, data) => {
         console.error(err);
         return;
     }
-    data = data.replace("http://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("/reminderapi", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app");
-    fs.writeFile("public/index.html", data, (err) => {
+    fs.writeFile("public/index.html", data.replace("http://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("/reminderapi", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app"), (err) => {
         if (err) {
             console.error(err);
             return;
