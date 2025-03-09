@@ -34,15 +34,15 @@ jobs:
               with:
                   source: ./
                   destination: ./_site
-            - name: Copy index.html to public directory
-              run: |
-                  mkdir -p public
-                  cp _site/index.html public/index.html
+            - name: Copy web files
+              run:
+                mkdir -p public
+                cp _site/index.html public/index.html
+                cp _site/assets/css/styles.css public/assets/assets/css/styles.css
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
                   path: public
-
     deploy:
         environment:
             name: github-pages
@@ -59,6 +59,6 @@ jobs:
               run: |
                   git config --local user.email "github-actions[bot]@users.noreply.github.com"
                   git config --local user.name "github-actions[bot]"
-                  git add public/index.html
+                  git add public
                   git commit -m "Deploy to GitHub Pages"
                   git push
