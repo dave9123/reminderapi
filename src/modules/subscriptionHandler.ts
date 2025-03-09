@@ -149,7 +149,7 @@ async function sendSubscription(target: string, message: any) {
 async function handleSubscriptions() {
     try {
         const subscriptions = await db.query(`
-            SELECT s.id AS subscription_id, s.target, r.id AS reminder_id, r.*
+            SELECT s.id AS subscription_id, s.target, s.type, r.id AS reminder_id, r.*
             FROM subscriptions s
             JOIN reminders r ON s.userid = r.userid
             LEFT JOIN firedSubscriptions fs ON s.id = fs.subscriptionid AND r.id = fs.reminderid
@@ -177,5 +177,5 @@ async function handleSubscriptions() {
 }
 
 export default function schedule() {
-    setInterval(handleSubscriptions, 1 * 60 * 1000);
+    setInterval(handleSubscriptions, 30 * 1000);
 }

@@ -12,6 +12,8 @@ An API to store your reminders easily!
 
 #### [GET] /api/reminders
 
+Get a list of reminder(s)
+
 Header(s):
 - `Authorization`*
 - Queries:
@@ -23,6 +25,8 @@ Returns:
 - 401 if unauthorized
 
 #### [POST] /api/reminders/add
+
+Adds a reminder
 
 Header(s):
 - `Authorization`*
@@ -82,9 +86,21 @@ Returns:
 - 200 along with subscription list paginated
 - 401 if unauthorized
 
+#### [POST] /api/subscription/edit
+
+Change `getSharedWith` trigger (to receive reminder(s) shared with you)
+
+Header(s):
+- `Authorization`*
+- Body (JSON):
+    - `type`* available options: discord-webhook, slack-webhook
+    - `target`* the URL to the webhook
+    - `getSharedWith`* get triggers for reminder(s) shared with you
+
+
 #### [POST] /api/subscription/add
 
-Adds a subscription for reminders that has the time information attached to it.
+Adds a subscription for reminders that has the time information attached to it
 
 Header(s):
 - `Authorization`*

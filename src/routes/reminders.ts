@@ -69,11 +69,13 @@ router.post("/add", async (req, res) => {
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
         if ("sharedWith" in body) {
             if (!Array.isArray(body["sharedWith"])) {
-                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
+                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of username(s)" });
             } else {
-                const users = (await db.query("SELECT id FROM users WHERE id = ANY($1)", [body["sharedWith"]])).rows;
+                const users = (await db.query("SELECT userid FROM users WHERE username = ANY($1)", [body["sharedWith"]])).rows;
                 if (users.length !== body["sharedWith"].length) {
-                    res.status(400).json({ message: "Invalid user IDs in sharedWith" });
+                    res.status(400).json({ message: "Invalid username(s) in sharedWith" });
+                } else {
+                    body["sharedWith"] = users.map(user => user.userid);
                 }
             }
         } else if ("title" in body && body["title"].length > 256) {
@@ -119,17 +121,19 @@ router.post("/modify/:id", async (req, res) => {
         const optionalFieldsValues = optionalFields.filter(field => field in body && field !== "time").map(field => body[field]);
         if ("sharedWith" in body) {
             if (!Array.isArray(body["sharedWith"])) {
-                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of user IDs" });
+                res.status(400).json({ message: "Invalid sharedWith format, ensure it's an array of username(s)" });
             } else {
-                const users = (await db.query("SELECT id FROM users WHERE id = ANY($1)", [body["sharedWith"]])).rows;
+                const users = (await db.query("SELECT userid FROM users WHERE username = ANY($1)", [body["sharedWith"]])).rows;
                 if (users.length !== body["sharedWith"].length) {
-                    res.status(400).json({ message: "Invalid user IDs in sharedWith" });
+                    res.status(400).json({ message: "Invalid username(s) in sharedWith" });
+                } else {
+                    body["sharedWith"] = users.map(user => user.userid);
                 }
             }
         } else if ("title" in body) {
             if (body["title"].length > 256) {
                 res.status(400).json({ message: "Title is too long, ensure it's less than 256 characters" });
-            } else if (body["title"].length === 0) {
+            } else if (body["title"].length < 1) {
                 res.status(400).json({ message: "Title cannot be empty" });
             }
         } else if ("description" in body && body["description"].length > 4096) {
