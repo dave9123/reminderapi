@@ -38,7 +38,7 @@ jobs:
               run:
                 mkdir -p public
                 cp _site/index.html public/index.html
-                cp _site/assets/css/styles.css public/assets/assets/css/styles.css
+                cp _site/assets/css/style.css public/assets/css/style.css
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
