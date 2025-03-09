@@ -176,5 +176,5 @@ async function handleSubscriptions() {
 }
 
 export default function schedule() {
-    setInterval(handleSubscriptions, 30 * 1000);
+    setInterval(handleSubscriptions, 10 * 1000);
 }
