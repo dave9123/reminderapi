@@ -89,4 +89,39 @@ router.delete("/remove", async (req, res) => {
     }
 });
 
+router.get("/logs", async (req, res) => {
+    try {
+        const auth = await checkAuthorization(req, res);
+        if (!auth) return;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const offset = (page - 1) * limit;
+        const logs = (await db.query(`
+            SELECT fs.id, fs.reminderid, fs.successful, fs.firedOn, r.title, r.description, r.time, r.color, r.priority, r.tags
+            FROM firedSubscriptions fs
+            JOIN reminders r ON fs.reminderid = r.id
+            JOIN subscriptions s ON fs.subscriptionid = s.id
+            WHERE s.userid = $1
+            ORDER BY fs.firedOn DESC
+            LIMIT $2 OFFSET $3
+        `, [auth.userid, limit, offset])).rows;
+        const totalLogs = (await db.query(`
+            SELECT COUNT(*)
+            FROM firedSubscriptions fs
+            JOIN subscriptions s ON fs.subscriptionid = s.id
+            WHERE s.userid = $1
+        `, [auth.userid])).rows[0].count;
+        res.json({
+            logs,
+            page,
+            limit,
+            totalLogs,
+            totalPages: Math.ceil(totalLogs / limit)
+        });
+    } catch (error) {
+        console.error("An error occured while getting logs", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
 export default router;

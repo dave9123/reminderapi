@@ -6,15 +6,14 @@ function HEXToVBColor(rrggbb: string): number {
     return parseInt(bbggrr, 16);
 }
 
-async function sendDiscordWebhook(target: string, message: any) {
+async function sendDiscordWebhook(subscription: any) {
     const embed: any = {
         "username": "Reminder Bot",
         "embeds": [
             {
-                "title": message.title,
+                "title": subscription.title,
                 "footer": {
-                    "text": "Made by dave9123",
-                    "icon_url": "https://dave9123.pages.dev/assets/img/profile/profile.jpg"
+                    "text": `Reminder created <t:${new Date(subscription.createdon)}:R>`
                 }
             }
         ],
@@ -23,31 +22,31 @@ async function sendDiscordWebhook(target: string, message: any) {
         }
     };
 
-    if (message.description) {
-        embed.embeds[0].description = message.description;
+    if (subscription.description) {
+        embed.embeds[0].description = subscription.description;
     }
 
-    if (message.color) {
-        embed.embeds[0].color = HEXToVBColor(message.color.replace("#", ""));
+    if (subscription.color) {
+        embed.embeds[0].color = HEXToVBColor(subscription.color.replace("#", ""));
     }
 
-    if (message.priority) {
+    if (subscription.priority) {
         embed.embeds[0].fields = embed.embeds[0].fields || [];
         embed.embeds[0].fields.push({
             "name": "Priority",
-            "value": message.priority
+            "value": subscription.priority
         });
     }
 
-    if (message.tags && Array.isArray(message.tags)) {
+    if (subscription.tags && Array.isArray(subscription.tags)) {
         embed.embeds[0].fields = embed.embeds[0].fields || [];
         embed.embeds[0].fields.push({
             "name": "Tags",
-            "value": message.tags.join(", ")
+            "value": subscription.tags.join(", ")
         });
     }
 
-    return await fetch(target, {
+    return await fetch(subscription.target, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -66,7 +65,7 @@ async function sendDiscordWebhook(target: string, message: any) {
     });
 }
 
-async function sendSlackWebhook(target: string, message: any) {
+async function sendSlackWebhook(subscription: any) {
     const embed: any = {
         "username": "Reminder Bot",
         "blocks": [
@@ -74,35 +73,35 @@ async function sendSlackWebhook(target: string, message: any) {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": message.title,
+                    "text": subscription.title,
                     "emoji": true
                 }
             }
         ]
     };
 
-    if (message.description) {
+    if (subscription.description) {
         embed.blocks.push({
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": message.description
+                "text": subscription.description
             }
         });
     }
 
-    if (message.tags || message.priority) {
+    if (subscription.tags || subscription.priority) {
         const fields: any[] = [];
-        if (message.tags && Array.isArray(message.tags)) {
+        if (subscription.tags && Array.isArray(subscription.tags)) {
             fields.push({
                 "type": "mrkdwn",
-                "text": `*Tags:*\n${message.tags.join(", ")}`
+                "text": `*Tags:*\n${subscription.tags.join(", ")}`
             });
         }
-        if (message.priority) {
+        if (subscription.priority) {
             fields.push({
                 "type": "mrkdwn",
-                "text": `*Priority:*\n${message.priority}`
+                "text": `*Priority:*\n${subscription.priority}`
             });
         }
         embed.blocks.push({
@@ -111,7 +110,7 @@ async function sendSlackWebhook(target: string, message: any) {
         });
     }
 
-    return await fetch(target, {
+    return await fetch(subscription.target, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -130,12 +129,12 @@ async function sendSlackWebhook(target: string, message: any) {
     });
 }
 
-async function sendSubscription(target: string, message: any) {
+async function sendSubscription(subscription: any) {
     try {
-        if (target === "discord-webhook") {
-            return await sendDiscordWebhook(target, message);
-        } else if (target === "slack-webhook") {
-            return await sendSlackWebhook(target, message);
+        if (subscription.type === "discord-webhook") {
+            return await sendDiscordWebhook(subscription);
+        } else if (subscription.type === "slack-webhook") {
+            return await sendSlackWebhook(subscription);
         } else {
             throw new Error("Unsupported subscription type");
         }
@@ -148,6 +147,7 @@ async function sendSubscription(target: string, message: any) {
 
 async function handleSubscriptions() {
     try {
+        console.log("Processing subscriptions...");
         const subscriptions = await db.query(`
             SELECT s.id AS subscription_id, s.target, s.type, r.id AS reminder_id, r.*
             FROM subscriptions s
@@ -165,9 +165,9 @@ async function handleSubscriptions() {
         }
 
         for (const target in remindersByTarget) {
-            for (const reminder of remindersByTarget[target]) {
-                const successful = await sendSubscription(target, reminder);
-                await db.query("INSERT INTO firedSubscriptions (subscriptionid, reminderid, successful) VALUES ($1, $2, $3)", [reminder.subscription_id, reminder.reminder_id, successful]);
+            for (const subscription of remindersByTarget[target]) {
+                const successful = await sendSubscription(subscription);
+                await db.query("INSERT INTO firedSubscriptions (subscriptionid, reminderid, successful) VALUES ($1, $2, $3)", [subscription.subscription_id, subscription.reminder_id, successful]);
             }
         }
     } catch (error) {
