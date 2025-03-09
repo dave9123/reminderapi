@@ -43,26 +43,6 @@ subscriptionHandler();
 
 app.use(express.static("public"));
 
-import fs from "fs";
-const baseUrl = process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app";
-const replaceUrls = (data: string) => {
-    return data.replace(/https?:\/\/dave9123\.is-a\.dev\/reminderapi\//g, baseUrl)
-               .replace(/\/reminderapi/g, baseUrl);
-};
-fs.readFile("public/index.html", "utf8", (err, data) => {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    const updatedData = replaceUrls(data);
-    fs.writeFile("public/index.html", updatedData, (err) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-    });
-});
-
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
