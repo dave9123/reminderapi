@@ -13,7 +13,7 @@ async function sendDiscordWebhook(subscription: any) {
             {
                 "title": subscription.title,
                 "footer": {
-                    "text": `Reminder created ${new Date(subscription.createdon)}:R>`
+                    "text": `Reminder created ${new Date(subscription.createdon)}`
                 }
             }
         ],
