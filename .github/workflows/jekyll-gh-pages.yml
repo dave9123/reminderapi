@@ -34,6 +34,13 @@ jobs:
               with:
                   source: .
                   destination: ./public
+            - name: Commit and push changes
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com" &&
+                  git config --local user.name "github-actions[bot]" &&
+                  git add public &&
+                  git commit -m "Deploy to GitHub Pages" &&
+                  git push
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
@@ -50,11 +57,3 @@ jobs:
             - name: Deploy to GitHub Pages
               uses: actions/deploy-pages@v4
               id: deployment
-            - name: Commit and push changes
-              run: |
-                  ls -lah &&
-                  git config --local user.email "github-actions[bot]@users.noreply.github.com" &&
-                  git config --local user.name "github-actions[bot]" &&
-                  git add public &&
-                  git commit -m "Deploy to GitHub Pages" &&
-                  git push
