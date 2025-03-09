@@ -50,6 +50,12 @@ fs.readFile("public/index.html", "utf8", (err, data) => {
         return;
     }
     data = data.replace("http://dave9123.is-a.dev/reminderapi/", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app").replace("/reminderapi", process.env.BASEURL || "https://reminderapi.dave9123.hackclub.app");
+    fs.writeFile("public/index.html", data, (err) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+    });
 });
 
 app.listen(process.env.PORT || 3000, () => {
