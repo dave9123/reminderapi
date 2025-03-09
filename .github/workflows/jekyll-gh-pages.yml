@@ -32,13 +32,8 @@ jobs:
             - name: Build with Jekyll
               uses: actions/jekyll-build-pages@v1
               with:
-                  source: ./
-                  destination: ./_site
-            - name: Copy web files
-              run:
-                mkdir -p public &&
-                cp _site/index.html public/index.html &&
-                cp _site/assets/css/style.css public/assets/css/style.css
+                  source: ./README.md
+                  destination: ./public
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
