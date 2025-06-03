@@ -25,7 +25,7 @@
         "nodemon:dev": "NODE_ENV=development nodemon -w src -e ts,js --exec 'ts-node src/server.ts'"
     },
     "dependencies": {
-        "@sentry/node": "^8.55.0",
+        "@sentry/node": "^9.25.0",
         "@sentry/profiling-node": "^8.55.0",
         "@types/bcrypt": "^5.0.2",
         "@types/jsonwebtoken": "^9.0.9",
