@@ -28,7 +28,7 @@ importers:
         version: 6.0.0
       chrono-node:
         specifier: ^2.7.8
-        version: 2.8.0
+        version: 2.8.3
       dateparser:
         specifier: ^1.0.6
         version: 1.0.6
@@ -757,8 +757,8 @@ packages:
     resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
     engines: {node: '>= 16'}
 
-  chrono-node@2.8.0:
-    resolution: {integrity: sha512-//a/HhnCQ4zFHxRfi1m+jQwr8o0Gxsg0GUjZ39O6ud9lkhrnuLGX1oOKjGsivm9AVMS79cn0PmTa6JCRlzgfWA==}
+  chrono-node@2.8.3:
+    resolution: {integrity: sha512-YukiXak31pshonVWaeJ9cZ4xxWIlbsyn5qYUkG5pQ+usZ6l22ASXDIk0kHUQkIBNOCLRevFkHJjnGKXwZNtyZw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   cjs-module-lexer@1.4.3:
@@ -2144,7 +2144,7 @@ snapshots:
 
   check-error@2.1.1: {}
 
-  chrono-node@2.8.0:
+  chrono-node@2.8.3:
     dependencies:
       dayjs: 1.11.13
 
